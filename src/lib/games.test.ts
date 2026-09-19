@@ -5,6 +5,7 @@ import type { Database } from './db';
 import {
     getAllGames,
     getAllGameIds,
+    getCatalogSummary,
     getGameById,
     getGamesPage,
 } from './games';
@@ -51,6 +52,59 @@ describe('games data-access helpers', () => {
         const ids = await getAllGameIds(db);
         const all = await getAllGames(db);
         expect(ids).toEqual(all.map((g) => g.id));
+    });
+
+    it('returns the total games and average rating for rated games', async () => {
+        await seedGames(db, 2);
+        await db.insert(games).values({
+            title: 'Highly Rated Game',
+            description: 'Description',
+            starRating: 4.8,
+            categoryId: 1,
+            publisherId: 1,
+        });
+        await db.insert(games).values({
+            title: 'Unrated Game',
+            description: 'Description',
+            starRating: null,
+            categoryId: 1,
+            publisherId: 1,
+        });
+
+        const summary = await getCatalogSummary(db);
+
+        expect(summary.totalGames).toBe(4);
+        expect(summary.averageStarRating).toBeCloseTo(4.4, 10);
+    });
+
+    it('returns a null average when the catalog has no games', async () => {
+        await expect(getCatalogSummary(db)).resolves.toEqual({
+            totalGames: 0,
+            averageStarRating: null,
+        });
+    });
+
+    it('returns a null average when no games have ratings', async () => {
+        const [category] = await db
+            .insert(categories)
+            .values({ name: 'Unrated Category', description: 'cat' })
+            .returning({ id: categories.id });
+        const [publisher] = await db
+            .insert(publishers)
+            .values({ name: 'Unrated Publisher', description: 'pub' })
+            .returning({ id: publishers.id });
+        await db.insert(games).values({
+            title: 'Unrated Game',
+            description: 'Description',
+            starRating: null,
+            categoryId: category.id,
+            publisherId: publisher.id,
+        });
+
+        await expect(getCatalogSummary(db)).resolves.toEqual({
+            totalGames: 1,
+            averageStarRating: null,
+        });
     });
 
     it('returns the requested page of games and total page count', async () => {

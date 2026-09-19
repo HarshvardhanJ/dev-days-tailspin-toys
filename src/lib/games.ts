@@ -1,4 +1,4 @@
-import { asc, count, eq } from 'drizzle-orm';
+import { asc, avg, count, eq } from 'drizzle-orm';
 import type { Database } from './db';
 import { games, categories, publishers } from '../../db/schema';
 import type { Game } from '../types/game';
@@ -32,6 +32,11 @@ export interface GamesPage {
     currentPage: number;
     totalPages: number;
     totalGames: number;
+}
+
+export interface CatalogSummary {
+    totalGames: number;
+    averageStarRating: number | null;
 }
 
 function mapGame(row: GameSelectionRow): Game {
@@ -98,6 +103,22 @@ export async function getGamesPage(
 export async function getAllGameIds(db: Database): Promise<number[]> {
     const rows = await db.select({ id: games.id }).from(games).orderBy(asc(games.title));
     return rows.map((row) => row.id);
+}
+
+/** Aggregate catalog totals and the average of rated games. */
+export async function getCatalogSummary(db: Database): Promise<CatalogSummary> {
+    const [{ totalGames, averageStarRating }] = await db
+        .select({
+            totalGames: count(),
+            averageStarRating: avg(games.starRating),
+        })
+        .from(games);
+
+    return {
+        totalGames,
+        averageStarRating:
+            averageStarRating === null ? null : Number(averageStarRating),
+    };
 }
 
 /** A single game by id, or null when it does not exist. */
