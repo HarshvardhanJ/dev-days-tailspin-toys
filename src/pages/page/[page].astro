@@ -3,7 +3,7 @@ import type { GetStaticPaths } from 'astro';
 import GameList from '../../components/GameList.astro';
 import Layout from '../../layouts/Layout.astro';
 import { getDatabase } from '../../lib/db';
-import { GAMES_PER_PAGE, getGamesPage } from '../../lib/games';
+import { GAMES_PER_PAGE, getAllGames, getGamesPage } from '../../lib/games';
 
 export const prerender = true;
 
@@ -15,12 +15,14 @@ export const getStaticPaths = (async () => {
 }) satisfies GetStaticPaths;
 
 const page = Number(Astro.params.page);
-const gamesPage = await getGamesPage(getDatabase(), page);
+const database = getDatabase();
+const gamesPage = await getGamesPage(database, page);
+const allGames = await getAllGames(database);
 ---
 
 <Layout title={`Games - Page ${page} - Tailspin Toys`}>
   <div class="py-8">
     <h1 class="text-3xl font-semibold text-slate-100 mb-6">Games</h1>
-    <GameList gamesPage={gamesPage} />
+    <GameList gamesPage={gamesPage} allGames={allGames} />
   </div>
 </Layout>

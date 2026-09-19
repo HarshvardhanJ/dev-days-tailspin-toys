@@ -6,20 +6,6 @@ test.describe('Game Listing and Navigation', () => {
       await page.goto('/');
     });
 
-    test('should navigate between paginated game list pages', async ({ page }) => {
-      await test.step('Verify the first page has pagination controls', async () => {
-        await page.goto('/');
-        await expect(page.getByTestId('pagination')).toBeVisible();
-        await expect(page.getByTestId('pagination-next')).toHaveAttribute('href', '/page/2');
-      });
-
-      await test.step('Navigate to the next page', async () => {
-        await page.getByTestId('pagination-next').click();
-        await expect(page).toHaveURL('/page/2');
-        await expect(page.getByTestId('pagination-page-2')).toHaveAttribute('aria-current', 'page');
-        await expect(page.getByTestId('pagination-previous')).toHaveAttribute('href', '/');
-      });
-    });
 
     await test.step('Verify games grid is visible', async () => {
       const gamesGrid = page.getByTestId('games-grid');
@@ -36,6 +22,21 @@ test.describe('Game Listing and Navigation', () => {
       const gameCards = page.getByTestId('game-card');
       await expect(gameCards.first().getByTestId('game-title')).toBeVisible();
       await expect(gameCards.first().getByTestId('game-title')).not.toBeEmpty();
+    });
+  });
+
+  test('should navigate between paginated game list pages', async ({ page }) => {
+    await test.step('Verify the first page has pagination controls', async () => {
+      await page.goto('/');
+      await expect(page.getByTestId('pagination')).toBeVisible();
+      await expect(page.getByTestId('pagination-next')).toHaveAttribute('href', '/page/2');
+    });
+
+    await test.step('Navigate to the next page', async () => {
+      await page.getByTestId('pagination-next').click();
+      await expect(page).toHaveURL('/page/2');
+      await expect(page.getByTestId('pagination-page-2')).toHaveAttribute('aria-current', 'page');
+      await expect(page.getByTestId('pagination-previous')).toHaveAttribute('href', '/');
     });
   });
 

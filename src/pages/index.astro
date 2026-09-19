@@ -3,12 +3,13 @@ import Layout from '../layouts/Layout.astro';
 import PageHero from '../components/PageHero.astro';
 import GameList from '../components/GameList.astro';
 import { getDatabase } from '../lib/db';
-import { getCatalogSummary, getGamesPage } from '../lib/games';
+import { getAllGames, getCatalogSummary, getGamesPage } from '../lib/games';
 
 export const prerender = true;
 
 const database = getDatabase();
 const gamesPage = await getGamesPage(database, 1);
+const allGames = await getAllGames(database);
 const catalogSummary = await getCatalogSummary(database);
 ---
 
@@ -44,7 +45,7 @@ const catalogSummary = await getCatalogSummary(database);
     <div>
       <h2 class="text-2xl font-medium mb-6 text-slate-100">Featured Games</h2>
 
-      <GameList gamesPage={gamesPage} />
+      <GameList gamesPage={gamesPage} allGames={allGames} />
     </div>
   </div>
 </Layout>
