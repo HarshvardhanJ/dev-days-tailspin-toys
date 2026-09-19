@@ -14,6 +14,8 @@ The database is migrated and seeded automatically before `dev`/`build` (via the 
 
 The home page displays a catalog summary with the total number of games and the average rating for rated games, followed by the catalog in six-game pages. Use the pagination controls to browse additional static pages at `/page/2`, `/page/3`, and so on.
 
+Use the **Search games by title** field above the catalog to filter the full catalog as you type. Matching is case-insensitive; while a search is active, pagination is hidden and a no-results message appears when appropriate.
+
 ## Using this template
 
 This repository is a GitHub template. When you create a new repository from it, a one-time **Bootstrap template issues** workflow (`.github/workflows/bootstrap-issues.yml`) runs automatically on the first push to `main` and opens a set of starter issues describing suggested first features. Each issue is defined by a Markdown file in `.github/bootstrap-issues/` — the first heading becomes the issue title and the remaining content becomes the body — so you can edit, add, or remove files there to control which issues are created.

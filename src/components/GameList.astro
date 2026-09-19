@@ -2,21 +2,54 @@
 import EmptyState from './EmptyState.astro';
 import GameCard from './GameCard.astro';
 import type { GamesPage } from '../lib/games';
+import type { Game } from '../types/game';
 
 interface Props {
     gamesPage: GamesPage;
+    allGames: Game[];
 }
 
-const { gamesPage } = Astro.props;
+const { gamesPage, allGames } = Astro.props;
 const pagePath = (page: number): string => page === 1 ? '/' : `/page/${page}`;
+const currentPageGameIds = new Set(gamesPage.games.map((game) => game.id));
+const displayGames = [
+  ...gamesPage.games,
+  ...allGames.filter((game) => !currentPageGameIds.has(game.id)),
+];
 ---
 
-{gamesPage.games.length === 0 ? (
+<section aria-label="Search games" data-testid="game-search">
+  <label for="game-search-input" class="mb-2 block text-sm font-medium text-slate-200">
+    Search games by title
+  </label>
+  <input
+    id="game-search-input"
+    type="search"
+    placeholder="Search by title"
+    autocomplete="off"
+    class="mb-8 w-full rounded-lg border border-slate-600 bg-slate-800 px-4 py-3 text-slate-100 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+    data-testid="game-search-input"
+  />
+</section>
+
+{allGames.length === 0 ? (
   <EmptyState text="No games available at the moment." />
 ) : (
   <>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="games-grid">
-      {gamesPage.games.map((game) => <GameCard game={game} />)}
+      {displayGames.map((game) => (
+        <GameCard game={game} hidden={!gamesPage.games.some((pageGame) => pageGame.id === game.id)} />
+      ))}
+    </div>
+
+    <div
+      class="mt-8"
+      data-testid="search-empty-state"
+      role="status"
+      aria-live="polite"
+      hidden
+    >
+      <EmptyState text="No games match your search." />
     </div>
 
     {gamesPage.totalPages > 1 && (
@@ -68,3 +101,40 @@ const pagePath = (page: number): string => page === 1 ? '/' : `/page/${page}`;
     )}
   </>
 )}
+
+<script>
+  import { matchesGameTitle } from '../lib/game-search';
+
+  const searchInput = document.querySelector<HTMLInputElement>('[data-testid="game-search-input"]');
+  const cards = Array.from(document.querySelectorAll<HTMLElement>('[data-testid="game-card"]'));
+  const pagination = document.querySelector<HTMLElement>('[data-testid="pagination"]');
+  const emptyState = document.querySelector<HTMLElement>('[data-testid="search-empty-state"]');
+  const currentPageGameIds = new Set(
+    cards.filter((card) => !card.hidden).map((card) => card.dataset.gameId),
+  );
+
+  searchInput?.addEventListener('input', () => {
+    const query = searchInput.value;
+    const isSearching = query.trim().length > 0;
+    let visibleMatches = 0;
+
+    cards.forEach((card) => {
+      const matches = matchesGameTitle(card.dataset.gameTitle ?? '', query);
+      const shouldShow = isSearching
+        ? matches
+        : currentPageGameIds.has(card.dataset.gameId);
+
+      card.hidden = !shouldShow;
+      if (shouldShow && isSearching) {
+        visibleMatches += 1;
+      }
+    });
+
+    if (pagination) {
+      pagination.hidden = isSearching;
+    }
+    if (emptyState) {
+      emptyState.hidden = !isSearching || visibleMatches > 0;
+    }
+  });
+</script>
