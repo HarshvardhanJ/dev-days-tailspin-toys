@@ -3,11 +3,13 @@ import Layout from '../layouts/Layout.astro';
 import PageHero from '../components/PageHero.astro';
 import GameList from '../components/GameList.astro';
 import { getDatabase } from '../lib/db';
-import { getGamesPage } from '../lib/games';
+import { getCatalogSummary, getGamesPage } from '../lib/games';
 
 export const prerender = true;
 
-const gamesPage = await getGamesPage(getDatabase(), 1);
+const database = getDatabase();
+const gamesPage = await getGamesPage(database, 1);
+const catalogSummary = await getCatalogSummary(database);
 ---
 
 <Layout title="Tailspin Toys - Crowdfunding your new favorite game!">
@@ -16,6 +18,28 @@ const gamesPage = await getGamesPage(getDatabase(), 1);
       title="Welcome to Tailspin Toys"
       subtitle="Find your next game! And maybe even back one! Explore our collection!"
     />
+
+    <section
+      class="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-2"
+      aria-labelledby="catalog-summary-title"
+      data-testid="catalog-summary"
+    >
+      <h2 id="catalog-summary-title" class="sr-only">Catalog summary</h2>
+      <div class="rounded-xl border border-slate-700 bg-slate-800/70 p-5">
+        <p class="text-sm font-medium uppercase tracking-wide text-slate-400">Games in the catalog</p>
+        <p class="mt-2 text-3xl font-bold text-slate-100" data-testid="catalog-total-games">
+          {catalogSummary.totalGames}
+        </p>
+      </div>
+      <div class="rounded-xl border border-slate-700 bg-slate-800/70 p-5">
+        <p class="text-sm font-medium uppercase tracking-wide text-slate-400">Average star rating</p>
+        <p class="mt-2 text-3xl font-bold text-slate-100" data-testid="catalog-average-rating">
+          {catalogSummary.averageStarRating === null
+            ? 'No ratings yet'
+            : catalogSummary.averageStarRating.toFixed(1)}
+        </p>
+      </div>
+    </section>
 
     <div>
       <h2 class="text-2xl font-medium mb-6 text-slate-100">Featured Games</h2>

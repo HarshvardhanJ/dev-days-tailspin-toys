@@ -12,7 +12,7 @@ Tailspin Toys is a crowdfunding platform for games with a developer theme. The p
 
 The database is migrated and seeded automatically before `dev`/`build` (via the `predev`/`prebuild` npm scripts) and is written to the gitignored `tailspin.db` file.
 
-The home page displays the game catalog in six-game pages. Use the pagination controls to browse additional static pages at `/page/2`, `/page/3`, and so on.
+The home page displays a catalog summary with the total number of games and the average rating for rated games, followed by the catalog in six-game pages. Use the pagination controls to browse additional static pages at `/page/2`, `/page/3`, and so on.
 
 ## Using this template
 
