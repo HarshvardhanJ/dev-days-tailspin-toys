@@ -1,0 +1,70 @@
+---
+import EmptyState from './EmptyState.astro';
+import GameCard from './GameCard.astro';
+import type { GamesPage } from '../lib/games';
+
+interface Props {
+    gamesPage: GamesPage;
+}
+
+const { gamesPage } = Astro.props;
+const pagePath = (page: number): string => page === 1 ? '/' : `/page/${page}`;
+---
+
+{gamesPage.games.length === 0 ? (
+  <EmptyState text="No games available at the moment." />
+) : (
+  <>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="games-grid">
+      {gamesPage.games.map((game) => <GameCard game={game} />)}
+    </div>
+
+    {gamesPage.totalPages > 1 && (
+      <nav class="mt-8 flex items-center justify-center gap-2" aria-label="Game list pagination" data-testid="pagination">
+        {gamesPage.currentPage > 1 && (
+          <a
+            href={pagePath(gamesPage.currentPage - 1)}
+            aria-label="Go to previous page"
+            class="rounded-lg border border-slate-700 px-4 py-2 text-slate-200 transition-colors hover:bg-slate-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            data-testid="pagination-previous"
+          >
+            Previous
+          </a>
+        )}
+
+        {Array.from({ length: gamesPage.totalPages }, (_, index) => index + 1).map((page) => (
+          page === gamesPage.currentPage ? (
+            <span
+              aria-current="page"
+              aria-label={`Page ${page}, current page`}
+              class="rounded-lg bg-blue-600 px-4 py-2 text-white"
+              data-testid={`pagination-page-${page}`}
+            >
+              {page}
+            </span>
+          ) : (
+            <a
+              href={pagePath(page)}
+              aria-label={`Go to page ${page}`}
+              class="rounded-lg border border-slate-700 px-4 py-2 text-slate-200 transition-colors hover:bg-slate-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              data-testid={`pagination-page-${page}`}
+            >
+              {page}
+            </a>
+          )
+        ))}
+
+        {gamesPage.currentPage < gamesPage.totalPages && (
+          <a
+            href={pagePath(gamesPage.currentPage + 1)}
+            aria-label="Go to next page"
+            class="rounded-lg border border-slate-700 px-4 py-2 text-slate-200 transition-colors hover:bg-slate-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            data-testid="pagination-next"
+          >
+            Next
+          </a>
+        )}
+      </nav>
+    )}
+  </>
+)}

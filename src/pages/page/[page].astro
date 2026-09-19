@@ -1,0 +1,26 @@
+---
+import type { GetStaticPaths } from 'astro';
+import GameList from '../../components/GameList.astro';
+import Layout from '../../layouts/Layout.astro';
+import { getDatabase } from '../../lib/db';
+import { GAMES_PER_PAGE, getGamesPage } from '../../lib/games';
+
+export const prerender = true;
+
+export const getStaticPaths = (async () => {
+  const { totalPages } = await getGamesPage(getDatabase(), 1, GAMES_PER_PAGE);
+  return Array.from({ length: Math.max(totalPages - 1, 0) }, (_, index) => ({
+    params: { page: String(index + 2) },
+  }));
+}) satisfies GetStaticPaths;
+
+const page = Number(Astro.params.page);
+const gamesPage = await getGamesPage(getDatabase(), page);
+---
+
+<Layout title={`Games - Page ${page} - Tailspin Toys`}>
+  <div class="py-8">
+    <h1 class="text-3xl font-semibold text-slate-100 mb-6">Games</h1>
+    <GameList gamesPage={gamesPage} />
+  </div>
+</Layout>
